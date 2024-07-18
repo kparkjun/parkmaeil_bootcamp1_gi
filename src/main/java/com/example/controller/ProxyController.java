@@ -1,5 +1,8 @@
 package com.example.controller;
 
+import com.example.entity.Bible;
+import com.example.repository.BookMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +17,9 @@ import java.util.Map;
 
 @RestController
 public class ProxyController {
+
+    @Autowired
+    private BookMapper mapper;
 
     @PostMapping("/proxy/date")
     public ResponseEntity<String> getDateData(@RequestBody Map<String, String> dateData) {
@@ -46,5 +52,16 @@ public class ProxyController {
         responseHeaders.setContentType(new MediaType("text", "html", StandardCharsets.UTF_8));
 
         return new ResponseEntity<>(response, responseHeaders, HttpStatus.OK);
+    }
+
+    @PostMapping("/proxy/insertBible")
+    public ResponseEntity<?> insertBible(@RequestBody Bible bible) {
+        try {
+            //bibleReflectionService.saveReflection(bibleReflection);\
+            mapper.bibleInsert(bible);
+            return ResponseEntity.ok().body("{\"success\": true}");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"success\": false}");
+        }
     }
 }

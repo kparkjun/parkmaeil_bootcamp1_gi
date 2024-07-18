@@ -11,4 +11,10 @@
         insert into book(title, price, author, page)
         values(#{title} , #{price}, #{author}, 500)
     </insert>
+
+    <insert id="bibleInsert" parameterType="com.example.entity.Bible">
+        insert into bible(customer_id, bible_word, bible_repent, bible_things,bible_implement)
+        values(#{customer_id} , #{bible_word}, #{bible_repent}, #{bible_things},#{bible_implement})
+    </insert>
+
 </mapper>

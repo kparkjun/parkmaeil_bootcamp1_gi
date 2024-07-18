@@ -112,10 +112,10 @@
 document.addEventListener('DOMContentLoaded', function() {
 
    var today = new Date();
-    var year = today.getFullYear();
-    var month = (today.getMonth() + 1).toString().padStart(2, '0');
-    var day = today.getDate().toString().padStart(2, '0');
-    var formattedDate = year + '-' + month + '-' + day;
+    var year = today.getFullYear(); // 2024
+    var month = (today.getMonth() + 1).toString().padStart(2, '0'); // 07
+    var day = today.getDate().toString().padStart(2, '0'); // 18
+    var formattedDate = year + '-' + month + '-' + day; // 2024-07-18
 
     document.getElementById('calendarInput').value = formattedDate;
     goBible(formattedDate);
@@ -128,8 +128,9 @@ document.getElementById('calendarInput').addEventListener('change', function() {
 });
 
 function goBible(selectedDate){
-    document.getElementById('selectedDate').textContent = "선택된 날짜: " + selectedDate;
     document.getElementById('dateDisplayCard').style.display = 'block';
+    document.getElementById('selectedDate').textContent = "선택된 날짜: " + selectedDate;
+    console.log(JSON.stringify({date: selectedDate}));
       fetch('${cpath}/proxy/date', {
             method: 'POST',
             headers: {
@@ -203,14 +204,13 @@ function sendKakaoMessage() {
         objectType: 'text',
         text: message,
         link: {
-            mobileWebUrl: window.location.href,
-            webUrl: window.location.href
+
         }
     });
 }
 
 // 카카오톡 SDK 초기화
-Kakao.init('f10d309a88d5dce235090b66392a59f0'); // 여기에 발급받은 JavaScript 키를 입력하세요.
+Kakao.init('db161ca250d8f49e2fdd7fb57f7bd127'); // 여기에 발급받은 JavaScript 키를 입력하세요.
 </script>
 
 <!-- 세 번째 열, 12개 중 3개 열 차지 -->
@@ -218,21 +218,21 @@ Kakao.init('f10d309a88d5dce235090b66392a59f0'); // 여기에 발급받은 JavaSc
   <form id="reflectionForm">
     <div class="form-group">
       <label for="godReflection">나의 하나님:</label>
-      <input type="text" class="form-control" id="godReflection" name="godReflection">
+      <input type="text" class="form-control" id="bible_word" name="bible_word">
     </div>
     <div class="form-group">
       <label for="repentance">회개:</label>
-      <textarea class="form-control" id="repentance" name="repentance" rows="2"></textarea>
+      <textarea class="form-control" id="bible_repent" name="bible_repent" rows="2"></textarea>
     </div>
     <div class="form-group">
       <label for="insight">깨달음:</label>
-      <textarea class="form-control" id="insight" name="insight" rows="2"></textarea>
+      <textarea class="form-control" id="bible_things" name="bible_things" rows="2"></textarea>
     </div>
     <div class="form-group">
       <label for="action">실천:</label>
-      <textarea class="form-control" id="action" name="action" rows="2"></textarea>
+      <textarea class="form-control" id="bible_implement" name="bible_implement" rows="2"></textarea>
     </div>
-    <button type="submit" class="btn btn-primary">등록</button>
+    <button type="button" class="btn btn-primary" onclick="goBibleInsert()">등록</button>
     <button type="button" class="btn btn-secondary" onclick="resetForm()">취소</button>
   </form>
 
@@ -248,6 +248,41 @@ Kakao.init('f10d309a88d5dce235090b66392a59f0'); // 여기에 발급받은 JavaSc
 // 폼 데이터 초기화 함수
 function resetForm() {
     document.getElementById("reflectionForm").reset();
+}
+
+function goBibleInsert(){
+    // 로그인정보
+    const customer_id="user01";
+    const bibleWord = document.getElementById('bible_word').value;
+    const bibleRepent = document.getElementById('bible_repent').value;
+    const bibleThings = document.getElementById('bible_things').value;
+    const bibleImplement = document.getElementById('bible_implement').value;
+
+    const data = {
+        customer_id:customer_id,
+        bible_word: bibleWord,
+        bible_repent: bibleRepent,
+        bible_things: bibleThings,
+        bible_implement: bibleImplement
+    };
+
+    fetch('${cpath}/proxy/insertBible', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('데이터가 성공적으로 전송되었습니다.');
+            resetForm(); // 전송 후 폼 초기화
+        } else {
+            alert('데이터 전송에 실패했습니다.');
+        }
+    })
+    .catch(error => console.error('Error:', error));
 }
 </script>
 

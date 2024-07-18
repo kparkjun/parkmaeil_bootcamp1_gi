@@ -2,6 +2,7 @@ package com.example.controller;
 
 import com.example.entity.Book;
 import com.example.repository.BookMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,10 +11,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 
 @Controller
+@RequiredArgsConstructor
 public class SpringController {
 
-    @Autowired
-    private BookMapper mapper;
+    private final   BookMapper mapper;
 
     @RequestMapping("/spring")
     public String index(){
@@ -26,4 +27,11 @@ public class SpringController {
         model.addAttribute("list", list);
         return "list"; // list.jsp
     }
+
+    @RequestMapping("/bible")
+    public String bible(){
+        return "bible"; // bible.jsp
+    }
+
+
 }

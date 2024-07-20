@@ -15,6 +15,8 @@
   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://developers.kakao.com/sdk/js/kakao.min.js"></script> <!-- Kakao JavaScript SDK 로드 -->
+  <script src="https://uicdn.toast.com/chart/latest/toastui-chart.min.js"></script> <!-- Toast UI Chart JavaScript SDK 로드 -->
+
 <style>
   /* 커스텀 스타일 */
   .custom-container {
@@ -64,6 +66,13 @@
   .reflection-col {
     background-color: #dee2e6; /* 더 진한 회색 */
   }
+
+  /* 차트 표시 스타일 */
+  #chart-area {
+    display: none;
+    margin-top: 20px;
+  }
+
   </style>
 </head>
 <body>
@@ -78,10 +87,11 @@
         <!-- 첫 번째 열, 12개 중 2개 열 차지 -->
       <div class="col-12 col-md-2 mb-3 login-col d-flex flex-column">
         <!-- 로그인 폼 -->
-        <form>
+        <c:if test="${empty cus}">
+        <form action="${cpath}/login" method="post">
           <div class="form-group">
             <label for="userId">아이디:</label>
-            <input type="text" class="form-control" id="userId" placeholder="아이디 입력" name="userId">
+            <input type="text" class="form-control" id="customer_id" placeholder="아이디 입력" name="customer_id">
           </div>
           <div class="form-group">
             <label for="password">패스워드:</label>
@@ -89,6 +99,15 @@
           </div>
           <button type="submit" class="form-control btn btn-primary">로그인</button>
         </form>
+        </c:if>
+        <c:if test="${!empty cus}">
+                <form action="${cpath}/logout" method="post">
+                  <div class="form-group">
+                    <label>${cus.customer_name}님 Welcome!!</label>
+                  </div>
+                  <button type="submit" class="form-control btn btn-primary">로그아웃</button>
+                </form>
+        </c:if>
       </div>
 
    <!-- 두 번째 열, 12개 중 7개 열 차지 -->
@@ -105,6 +124,12 @@
         <div id="detailList"></div>
     </div>
   </div>
+  <!-- 차트를 표시할 영역 -->
+  <div id="chart-area"></div>
+  <!-- 차트 표시 버튼 -->
+ <c:if test="${!empty cus}">
+     <button type="button" class="btn btn-info mt-3" onclick="showChart()">Show Chart</button>
+ </c:if>
  </div>
 
 <script>
@@ -211,6 +236,53 @@ function sendKakaoMessage() {
 
 // 카카오톡 SDK 초기화
 Kakao.init('db161ca250d8f49e2fdd7fb57f7bd127'); // 여기에 발급받은 JavaScript 키를 입력하세요.
+
+// 차트를 표시하는 함수
+function showChart() {
+    document.getElementById('chart-area').innerHTML="";
+    // 차트 데이터를 서버에서 가져오기
+    const customerId = '${cus.customer_id}'; // 실제 고객 ID로 교체
+    fetch('${cpath}/proxy/monthly-data?customerId='+customerId)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data); // ?
+            // 데이터 가공
+            const categories = data.map(item => item.month);
+            const seriesData = data.map(item => item.count);
+            console.log(categories);
+            console.log(seriesData);
+            // 차트 영역을 보이도록 설정
+            document.getElementById('chart-area').style.display = 'block';
+
+            // Toast UI Chart 생성
+            const chart = toastui.Chart.barChart({
+                el: document.getElementById('chart-area'),
+                data: {
+                    categories: categories,
+                    series: [
+                        {
+                            name: 'Count',
+                            data: seriesData
+                        }
+                    ]
+                },
+                options: {
+                    chart: {
+                        title: 'Monthly Data Count in Bible Table',
+                        width: 900,
+                        height: 400
+                    },
+                    xAxis: {
+                        title: 'Count'
+                    },
+                    yAxis: {
+                        title: 'Month'
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error:', error));
+}
 </script>
 
 <!-- 세 번째 열, 12개 중 3개 열 차지 -->
@@ -232,7 +304,12 @@ Kakao.init('db161ca250d8f49e2fdd7fb57f7bd127'); // 여기에 발급받은 JavaSc
       <label for="action">실천:</label>
       <textarea class="form-control" id="bible_implement" name="bible_implement" rows="2"></textarea>
     </div>
-    <button type="button" class="btn btn-primary" onclick="goBibleInsert()">등록</button>
+    <c:if test="${!empty cus}">
+      <button type="button" class="btn btn-primary" onclick="goBibleInsert()">등록</button>
+    </c:if>
+     <c:if test="${empty cus}">
+          <button type="button" class="btn btn-primary" onclick="goBibleInsert()" disabled>등록</button>
+     </c:if>
     <button type="button" class="btn btn-secondary" onclick="resetForm()">취소</button>
   </form>
 
@@ -252,12 +329,12 @@ function resetForm() {
 
 function goBibleInsert(){
     // 로그인정보
-    const customer_id="user01";
+    const customer_id="${cus.customer_id}";
     const bibleWord = document.getElementById('bible_word').value;
     const bibleRepent = document.getElementById('bible_repent').value;
     const bibleThings = document.getElementById('bible_things').value;
     const bibleImplement = document.getElementById('bible_implement').value;
-
+    // {   } : Object -> JSON(String)
     const data = {
         customer_id:customer_id,
         bible_word: bibleWord,

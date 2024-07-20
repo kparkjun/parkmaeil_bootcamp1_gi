@@ -5,14 +5,13 @@ import com.example.repository.BookMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -63,5 +62,11 @@ public class ProxyController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"success\": false}");
         }
+    }
+    // 추가
+    @GetMapping("/proxy/monthly-data")
+    public ResponseEntity<?> getMonthlyData(@RequestParam("customerId") String customerId) {
+        List<Map<String, Object>> data = mapper.getMonthlyData(customerId);
+        return ResponseEntity.ok(data);
     }
 }

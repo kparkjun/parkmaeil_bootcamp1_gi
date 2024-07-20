@@ -17,4 +17,16 @@
         values(#{customer_id} , #{bible_word}, #{bible_repent}, #{bible_things},#{bible_implement})
     </insert>
 
+    <select id="getMonthlyData" parameterType="String" resultType="map">
+        SELECT DATE_FORMAT(bible_date, '%Y-%m') AS month, COUNT(*) AS count
+        FROM bible
+        WHERE customer_id = #{customerId}
+        GROUP BY month
+        ORDER BY month
+    </select>
+
+    <select id="login" parameterType="com.example.entity.Customer" resultType="com.example.entity.Customer">
+         select * from customer
+         where customer_id=#{customer_id} and password=#{password}
+    </select>
 </mapper>

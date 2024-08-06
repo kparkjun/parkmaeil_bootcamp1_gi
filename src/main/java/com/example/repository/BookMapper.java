@@ -16,4 +16,5 @@ public interface BookMapper {
     public void bibleInsert(Bible bible);
     List<Map<String, Object>> getMonthlyData(@Param("customerId") String customerId);
     public Customer login(Customer customer);
+    public List<Customer> customers();
 }
